@@ -1,23 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Providers from "@/components/Providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "LegalConnect - AI-Powered Professional Services Platform",
-  description: "Connect with expert professionals for legal, therapy, mentoring and more. AI-powered matching and seamless booking.",
+  title: "LexConnect - AI-Augmented Legal Consultation Platform",
+  description: "Connect with verified lawyers anytime, anywhere. AI-powered legal assistance, secure consultations, and comprehensive case management.",
 };
 
 export default function RootLayout({
@@ -27,9 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-      >
+      <body className="antialiased flex flex-col min-h-screen">
         <Providers>
           <Navbar />
           <main className="flex-1">
@@ -41,3 +28,4 @@ export default function RootLayout({
     </html>
   );
 }
+
