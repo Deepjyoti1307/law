@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { User, Scale, Mail, Lock, Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import type { UserRole } from '@/types/auth';
+import { useGoogleLogin } from '@react-oauth/google';
 
 export default function RegisterPage() {
     const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
@@ -65,20 +66,22 @@ export default function RegisterPage() {
         }
     };
 
-    const handleGoogleSignup = async () => {
-        setError('');
-        setIsLoading(true);
+    const googleSignup = useGoogleLogin({
+        onSuccess: async (response) => {
+            setIsLoading(true);
+            try {
+                await loginWithGoogle(response.access_token);
+            } catch (err: any) {
+                setError(err.message || 'Google signup failed.');
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        onError: () => {
+            setError('Google signup failed. Please try again.');
+        },
+    });
 
-        try {
-            // Same Google OAuth setup as login page
-            alert('Google OAuth integration required. See console for setup instructions.');
-            console.log('Google OAuth setup instructions in login page console');
-        } catch (err: any) {
-            setError(err.message || 'Google signup failed.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     return (
         <div className="min-h-[calc(100vh-200px)] px-4 py-12">
@@ -115,7 +118,7 @@ export default function RegisterPage() {
                                 <button
                                     onClick={() => {
                                         setSelectedRole('CLIENT');
-                                        handleGoogleSignup();
+                                        googleSignup();
                                     }}
                                     disabled={isLoading}
                                     className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-[#c49b5a] via-[#d4a862] to-[#c49b5a] bg-[length:280%_auto] text-white border-none font-medium transition-all duration-700 hover:bg-right shadow-[0px_0px_20px_rgba(196,155,90,0.5),0px_5px_5px_-1px_rgba(196,155,90,0.25)] hover:shadow-[0px_0px_25px_rgba(196,155,90,0.6)] disabled:opacity-50"
@@ -152,7 +155,7 @@ export default function RegisterPage() {
                                 <button
                                     onClick={() => {
                                         setSelectedRole('LAWYER');
-                                        handleGoogleSignup();
+                                        googleSignup();
                                     }}
                                     disabled={isLoading}
                                     className="w-full flex items-center justify-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-[#c49b5a] via-[#d4a862] to-[#c49b5a] bg-[length:280%_auto] text-white border-none font-medium transition-all duration-700 hover:bg-right shadow-[0px_0px_20px_rgba(196,155,90,0.5),0px_5px_5px_-1px_rgba(196,155,90,0.25)] hover:shadow-[0px_0px_25px_rgba(196,155,90,0.6)] disabled:opacity-50"

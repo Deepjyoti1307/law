@@ -1,6 +1,7 @@
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Section } from '@/components/Section';
+import Link from 'next/link';
 import { Scale, Shield, MessageSquare, FileText, CheckCircle, Users, Clock, Award } from 'lucide-react';
 
 export default function Home() {
@@ -24,12 +25,16 @@ export default function Home() {
             verified lawyers for secure consultations and comprehensive case management.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6 md:mb-8">
-            <Button size="lg" variant="gradient" icon={<MessageSquare size={20} />}>
-              Get Legal Help
-            </Button>
-            <Button size="lg" variant="gradient" icon={<Scale size={20} />}>
-              Join as Lawyer
-            </Button>
+            <Link href="/register">
+              <Button size="lg" variant="gradient" icon={<MessageSquare size={20} />}>
+                Get Legal Help
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="lg" variant="gradient" icon={<Scale size={20} />}>
+                Join as Lawyer
+              </Button>
+            </Link>
           </div>
           <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-sm text-white/80">
             <div className="flex items-center gap-2">
