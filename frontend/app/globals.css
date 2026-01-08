@@ -125,9 +125,9 @@
 }
 
 .dark {
-  --background: #0f1a2e;
+  --background: #1a2744;
   --foreground: #f5f5f5;
-  --card: #1a2c4e;
+  --card: rgba(255, 255, 255, 0.05);
   --card-foreground: #f5f5f5;
   --popover: #1a2c4e;
   --popover-foreground: #f5f5f5;
@@ -135,8 +135,8 @@
   --primary-foreground: #1a2c4e;
   --secondary: #243a5e;
   --secondary-foreground: #f5f5f5;
-  --muted: #243a5e;
-  --muted-foreground: #9ca3af;
+  --muted: rgba(255, 255, 255, 0.05);
+  --muted-foreground: rgba(255, 255, 255, 0.6);
   --accent: #c49b5a;
   --accent-foreground: #1a2c4e;
   --destructive: #ef4444;
@@ -157,13 +157,13 @@
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: #c49b5a;
 
-  --component-bg: #1a2c4e;
-  --component-bg-hover: #243a5e;
+  --component-bg: rgba(255, 255, 255, 0.05);
+  --component-bg-hover: rgba(255, 255, 255, 0.08);
   --component-bg-dark: #0f1a2e;
 
   --text-primary: #f5f5f5;
-  --text-secondary: #d1d5db;
-  --text-light: #9ca3af;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-light: rgba(255, 255, 255, 0.5);
 
   --button-primary-bg: #c49b5a;
   --button-primary-bg-hover: #b38a4a;

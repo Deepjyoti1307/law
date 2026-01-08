@@ -7,11 +7,11 @@ export declare class AuthController {
         accessToken: string;
         refreshToken: string;
         user: {
-            id: string;
-            email: string;
             name: string;
+            email: string;
             role: import("@prisma/client").$Enums.UserRole;
             phone: string | null;
+            id: string;
             avatar: string | null;
             createdAt: Date;
         };
@@ -44,11 +44,11 @@ export declare class AuthController {
     }>;
     getMe(req: any): Promise<{
         user: {
-            id: string;
-            email: string;
             name: string;
+            email: string;
             role: import("@prisma/client").$Enums.UserRole;
             phone: string | null;
+            id: string;
             avatar: string | null;
             createdAt: Date;
         };
