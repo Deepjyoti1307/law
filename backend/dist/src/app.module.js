@@ -11,12 +11,16 @@ const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const auth_module_1 = require("./auth/auth.module");
+const lawyers_module_1 = require("./lawyers/lawyers.module");
+const dashboard_module_1 = require("./dashboard/dashboard.module");
+const reviews_module_1 = require("./reviews/reviews.module");
+const bookings_module_1 = require("./bookings/bookings.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
-        imports: [auth_module_1.AuthModule],
+        imports: [auth_module_1.AuthModule, lawyers_module_1.LawyersModule, dashboard_module_1.DashboardModule, reviews_module_1.ReviewsModule, bookings_module_1.BookingsModule],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
     })

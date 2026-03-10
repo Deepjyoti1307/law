@@ -3,7 +3,9 @@
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Card } from '@/components/Card';
 import { useAuth } from '@/contexts/auth-context';
-import { Calendar, MessageSquare, FileText, Users, DollarSign, TrendingUp } from 'lucide-react';
+import { useLawyerDashboard } from '@/hooks/use-dashboard';
+import { Users, Calendar, FileText, DollarSign, Star, CheckCircle, XCircle, Loader2, Edit } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LawyerDashboardPage() {
     return (
@@ -15,6 +17,7 @@ export default function LawyerDashboardPage() {
 
 function LawyerDashboard() {
     const { user } = useAuth();
+    const { data, isLoading } = useLawyerDashboard();
 
     return (
         <div className="min-h-[calc(100vh-200px)] px-4 py-12">
@@ -24,119 +27,140 @@ function LawyerDashboard() {
                         Welcome back, Counselor {user?.name}!
                     </h1>
                     <p className="text-muted-foreground">
-                        Your lawyer dashboard - manage clients and cases
+                        Your lawyer dashboard — manage your profile and clients
                     </p>
                 </div>
 
-                {/* Quick Stats */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-accent/10 rounded-lg">
-                                <Users className="text-accent" size={24} />
-                            </div>
-                            <span className="text-sm text-green-600 font-medium">+5 this week</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">24</h3>
-                        <p className="text-sm text-muted-foreground">Active Clients</p>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-20">
+                        <Loader2 className="animate-spin text-accent" size={32} />
+                    </div>
+                ) : !data?.hasProfile ? (
+                    <Card className="p-8 text-center">
+                        <h2 className="text-2xl font-bold text-foreground mb-4">Complete Your Profile</h2>
+                        <p className="text-muted-foreground mb-6">
+                            You haven't set up your lawyer profile yet. Complete your profile to start receiving clients.
+                        </p>
+                        <Link
+                            href="/dashboard/lawyer/profile"
+                            className="inline-block px-8 py-3 rounded-full bg-gradient-to-r from-[#c49b5a] via-[#d4a862] to-[#c49b5a] text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-[#c49b5a]/25"
+                        >
+                            Set Up Profile
+                        </Link>
                     </Card>
+                ) : (
+                    <>
+                        {/* Quick Stats */}
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-accent/10 rounded-lg">
+                                        <Star className="text-accent" size={24} />
+                                    </div>
+                                </div>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    {data.rating.toFixed(1)}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">Rating</p>
+                            </Card>
 
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-primary/10 rounded-lg">
-                                <Calendar className="text-primary" size={24} />
-                            </div>
-                            <span className="text-sm text-blue-600 font-medium">Today</span>
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-primary/10 rounded-lg">
+                                        <Users className="text-primary" size={24} />
+                                    </div>
+                                </div>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    {data.totalReviews}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">Total Reviews</p>
+                            </Card>
+
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-accent/10 rounded-lg">
+                                        <DollarSign className="text-accent" size={24} />
+                                    </div>
+                                </div>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    ${data.hourlyRate ?? 0}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">Hourly Rate</p>
+                            </Card>
+
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-primary/10 rounded-lg">
+                                        {data.verified ? (
+                                            <CheckCircle className="text-green-500" size={24} />
+                                        ) : (
+                                            <XCircle className="text-amber-500" size={24} />
+                                        )}
+                                    </div>
+                                </div>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    {data.verified ? 'Verified' : 'Pending'}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">Verification Status</p>
+                            </Card>
                         </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">8</h3>
-                        <p className="text-sm text-muted-foreground">Consultations Scheduled</p>
-                    </Card>
 
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-accent/10 rounded-lg">
-                                <FileText className="text-accent" size={24} />
-                            </div>
-                        </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">15</h3>
-                        <p className="text-sm text-muted-foreground">Active Cases</p>
-                    </Card>
-
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-primary/10 rounded-lg">
-                                <DollarSign className="text-primary" size={24} />
-                            </div>
-                            <span className="text-sm text-green-600 font-medium">+12%</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">$8.5k</h3>
-                        <p className="text-sm text-muted-foreground">Revenue (MTD)</p>
-                    </Card>
-                </div>
-
-                {/* Main Content */}
-                <div className="grid lg:grid-cols-2 gap-8">
-                    <Card className="p-6">
-                        <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                            <Calendar size={24} className="text-accent" />
-                            Today's Schedule
-                        </h2>
-                        <div className="space-y-4">
-                            {[
-                                { time: '9:00 AM', client: 'John Smith', type: 'Contract Review' },
-                                { time: '11:00 AM', client: 'Jane Doe', type: 'Initial Consultation' },
-                                { time: '2:00 PM', client: 'ABC Corp', type: 'Corporate Law' },
-                                { time: '4:00 PM', client: 'XYZ LLC', type: 'IP Discussion' },
-                            ].map((appointment, i) => (
-                                <div key={i} className="p-4 bg-muted/50 rounded-lg">
-                                    <div className="flex items-start justify-between mb-2">
-                                        <div>
-                                            <h3 className="font-semibold text-foreground">
-                                                {appointment.client}
-                                            </h3>
-                                            <p className="text-sm text-muted-foreground">
-                                                {appointment.type}
-                                            </p>
+                        {/* Profile Info */}
+                        <div className="grid lg:grid-cols-2 gap-8">
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                                        <FileText size={24} className="text-accent" />
+                                        Your Profile
+                                    </h2>
+                                    <Link
+                                        href="/dashboard/lawyer/profile"
+                                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-accent/10 text-accent rounded-md hover:bg-accent/20 transition"
+                                    >
+                                        <Edit size={14} /> Edit
+                                    </Link>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between py-2 border-b border-border">
+                                        <span className="text-muted-foreground">Specialization</span>
+                                        <span className="text-foreground font-medium">{data.specialization}</span>
+                                    </div>
+                                    {data.location && (
+                                        <div className="flex justify-between py-2 border-b border-border">
+                                            <span className="text-muted-foreground">Location</span>
+                                            <span className="text-foreground font-medium">{data.location}</span>
                                         </div>
-                                        <span className="text-sm font-medium text-accent">
-                                            {appointment.time}
-                                        </span>
+                                    )}
+                                    <div className="flex justify-between py-2 border-b border-border">
+                                        <span className="text-muted-foreground">Hourly Rate</span>
+                                        <span className="text-foreground font-medium">${data.hourlyRate}</span>
+                                    </div>
+                                    <div className="flex justify-between py-2">
+                                        <span className="text-muted-foreground">Reviews</span>
+                                        <span className="text-foreground font-medium">{data.totalReviews}</span>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </Card>
+                            </Card>
 
-                    <Card className="p-6">
-                        <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                            <TrendingUp size={24} className="text-primary" />
-                            Recent Activity
-                        </h2>
-                        <div className="space-y-4">
-                            {[
-                                { action: 'New client request', time: '2 hours ago', type: 'new' },
-                                { action: 'Case document uploaded', time: '5 hours ago', type: 'update' },
-                                { action: 'Consultation completed', time: 'Yesterday', type: 'complete' },
-                                { action: 'Payment received', time: '2 days ago', type: 'payment' },
-                            ].map((activity, i) => (
-                                <div key={i} className="flex items-start gap-3 pb-4 border-b border-border last:border-0">
-                                    <div className={`w-2 h-2 rounded-full mt-2 ${activity.type === 'new' ? 'bg-green-500' :
-                                            activity.type === 'payment' ? 'bg-primary' :
-                                                activity.type === 'complete' ? 'bg-accent' : 'bg-blue-500'
-                                        }`}></div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-foreground">
-                                            {activity.action}
+                            <Card className="p-6">
+                                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                                    <Calendar size={24} className="text-primary" />
+                                    Quick Tips
+                                </h2>
+                                <div className="space-y-3 text-sm text-muted-foreground">
+                                    {!data.verified && (
+                                        <p className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                                            ⚠️ Your profile is pending verification. An admin will review and verify your credentials.
                                         </p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {activity.time}
-                                        </p>
-                                    </div>
+                                    )}
+                                    <p>• Keep your profile up to date to attract more clients</p>
+                                    <p>• Respond to inquiries quickly for better reviews</p>
+                                    <p>• Set competitive hourly rates for your specialization</p>
                                 </div>
-                            ))}
+                            </Card>
                         </div>
-                    </Card>
-                </div>
+                    </>
+                )}
             </div>
         </div>
     );

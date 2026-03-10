@@ -3,7 +3,10 @@
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Card } from '@/components/Card';
 import { useAuth } from '@/contexts/auth-context';
-import { Users, Scale, FileText, DollarSign, AlertCircle, TrendingUp } from 'lucide-react';
+import { useAdminDashboard, verifyLawyer } from '@/hooks/use-dashboard';
+import { Users, Scale, FileText, DollarSign, AlertCircle, TrendingUp, Loader2, CheckCircle } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
 export default function AdminDashboardPage() {
     return (
@@ -15,6 +18,21 @@ export default function AdminDashboardPage() {
 
 function AdminDashboard() {
     const { user } = useAuth();
+    const { data, isLoading } = useAdminDashboard();
+    const queryClient = useQueryClient();
+    const [verifyingId, setVerifyingId] = useState<string | null>(null);
+
+    const handleVerify = async (profileId: string) => {
+        setVerifyingId(profileId);
+        try {
+            await verifyLawyer(profileId);
+            queryClient.invalidateQueries({ queryKey: ['dashboard', 'admin'] });
+        } catch (err) {
+            console.error('Failed to verify lawyer:', err);
+        } finally {
+            setVerifyingId(null);
+        }
+    };
 
     return (
         <div className="min-h-[calc(100vh-200px)] px-4 py-12">
@@ -28,120 +46,159 @@ function AdminDashboard() {
                     </p>
                 </div>
 
-                {/* Admin Stats */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-primary/10 rounded-lg">
-                                <Users className="text-primary" size={24} />
-                            </div>
-                            <span className="text-sm text-green-600 font-medium">+25%</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">1,284</h3>
-                        <p className="text-sm text-muted-foreground">Total Users</p>
-                    </Card>
-
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-accent/10 rounded-lg">
-                                <Scale className="text-accent" size={24} />
-                            </div>
-                            <span className="text-sm text-green-600 font-medium">+18%</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">342</h3>
-                        <p className="text-sm text-muted-foreground">Verified Lawyers</p>
-                    </Card>
-
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-primary/10 rounded-lg">
-                                <FileText className="text-primary" size={24} />
-                            </div>
-                            <span className="text-sm text-blue-600 font-medium">+12%</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">5,678</h3>
-                        <p className="text-sm text-muted-foreground">Total Cases</p>
-                    </Card>
-
-                    <Card className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-3 bg-accent/10 rounded-lg">
-                                <DollarSign className="text-accent" size={24} />
-                            </div>
-                            <span className="text-sm text-green-600 font-medium">+32%</span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-foreground mb-1">$156k</h3>
-                        <p className="text-sm text-muted-foreground">Revenue (MTD)</p>
-                    </Card>
-                </div>
-
-                <div className="grid lg:grid-cols-2 gap-8">
-                    {/* Pending Lawyer Verifications */}
-                    <Card className="p-6">
-                        <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                            <Scale size={24} className="text-accent" />
-                            Pending Lawyer Verifications
-                        </h2>
-                        <div className="space-y-4">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="p-4 bg-muted/50 rounded-lg">
-                                    <div className="flex items-start justify-between mb-2">
-                                        <div>
-                                            <h3 className="font-semibold text-foreground">Dr. Jane Smith</h3>
-                                            <p className="text-sm text-muted-foreground">Corporate Law • NY Bar #12345</p>
-                                        </div>
-                                        <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded">
-                                            Pending
-                                        </span>
-                                    </div>
-                                    <div className="flex gap-2 mt-3">
-                                        <button className="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary/90 transition">
-                                            Approve
-                                        </button>
-                                        <button className="px-3 py-1 text-sm border border-border rounded hover:bg-muted transition">
-                                            Review
-                                        </button>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-20">
+                        <Loader2 className="animate-spin text-accent" size={32} />
+                    </div>
+                ) : data ? (
+                    <>
+                        {/* Admin Stats */}
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-primary/10 rounded-lg">
+                                        <Users className="text-primary" size={24} />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </Card>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    {data.stats.totalUsers.toLocaleString()}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">Total Users</p>
+                            </Card>
 
-                    {/* System Alerts */}
-                    <Card className="p-6">
-                        <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                            <AlertCircle size={24} className="text-primary" />
-                            System Alerts
-                        </h2>
-                        <div className="space-y-4">
-                            <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg">
-                                <div className="flex items-start gap-3">
-                                    <AlertCircle className="text-red-600 mt-0.5" size={20} />
-                                    <div>
-                                        <h3 className="font-semibold text-foreground">Authentication Issue</h3>
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                            Multiple failed login attempts detected
-                                        </p>
-                                        <span className="text-xs text-red-600 mt-2 inline-block">High Priority</span>
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-accent/10 rounded-lg">
+                                        <Scale className="text-accent" size={24} />
                                     </div>
                                 </div>
-                            </div>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    {data.stats.verifiedLawyers}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                    Verified Lawyers (of {data.stats.totalLawyers} total)
+                                </p>
+                            </Card>
 
-                            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg">
-                                <div className="flex items-start gap-3">
-                                    <TrendingUp className="text-blue-600 mt-0.5" size={20} />
-                                    <div>
-                                        <h3 className="font-semibold text-foreground">User Growth</h3>
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                            50% increase in registrations this week
-                                        </p>
-                                        <span className="text-xs text-blue-600 mt-2 inline-block">Info</span>
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-primary/10 rounded-lg">
+                                        <FileText className="text-primary" size={24} />
                                     </div>
                                 </div>
-                            </div>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    {data.stats.totalReviews}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">Total Reviews</p>
+                            </Card>
+
+                            <Card className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="p-3 bg-accent/10 rounded-lg">
+                                        <DollarSign className="text-accent" size={24} />
+                                    </div>
+                                </div>
+                                <h3 className="text-2xl font-bold text-foreground mb-1">
+                                    {data.stats.totalBookings}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">Total Bookings</p>
+                            </Card>
                         </div>
+
+                        <div className="grid lg:grid-cols-2 gap-8">
+                            {/* Pending Lawyer Verifications */}
+                            <Card className="p-6">
+                                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                                    <Scale size={24} className="text-accent" />
+                                    Pending Lawyer Verifications
+                                </h2>
+                                {data.pendingVerifications.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {data.pendingVerifications.map((lawyer) => (
+                                            <div key={lawyer.id} className="p-4 bg-muted/50 rounded-lg">
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div>
+                                                        <h3 className="font-semibold text-foreground">{lawyer.name}</h3>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {lawyer.specialization}
+                                                            {lawyer.barNumber && ` • Bar #${lawyer.barNumber}`}
+                                                        </p>
+                                                    </div>
+                                                    <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded">
+                                                        Pending
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground mb-3">
+                                                    Applied {new Date(lawyer.createdAt).toLocaleDateString()}
+                                                </p>
+                                                <button
+                                                    onClick={() => handleVerify(lawyer.id)}
+                                                    disabled={verifyingId === lawyer.id}
+                                                    className="px-3 py-1 text-sm bg-primary text-white rounded hover:bg-primary/90 transition disabled:opacity-50 flex items-center gap-1"
+                                                >
+                                                    {verifyingId === lawyer.id ? (
+                                                        <Loader2 size={14} className="animate-spin" />
+                                                    ) : (
+                                                        <CheckCircle size={14} />
+                                                    )}
+                                                    Approve
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-muted-foreground text-sm">No pending verifications.</p>
+                                )}
+                            </Card>
+
+                            {/* Recent Users */}
+                            <Card className="p-6">
+                                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                                    <TrendingUp size={24} className="text-primary" />
+                                    Recent Users
+                                </h2>
+                                {data.recentUsers.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {data.recentUsers.map((recentUser) => (
+                                            <div key={recentUser.id} className="flex items-start gap-3 pb-4 border-b border-border last:border-0">
+                                                <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center font-bold text-accent text-sm">
+                                                    {recentUser.name.charAt(0)}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium text-foreground">
+                                                        {recentUser.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {recentUser.email}
+                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <span className={`text-xs px-2 py-0.5 rounded ${recentUser.role === 'ADMIN'
+                                                            ? 'bg-red-500/20 text-red-400'
+                                                            : recentUser.role === 'LAWYER'
+                                                                ? 'bg-accent/20 text-accent'
+                                                                : 'bg-primary/20 text-primary'
+                                                            }`}>
+                                                            {recentUser.role}
+                                                        </span>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {new Date(recentUser.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-muted-foreground text-sm">No users yet.</p>
+                                )}
+                            </Card>
+                        </div>
+                    </>
+                ) : (
+                    <Card className="p-8 text-center">
+                        <p className="text-red-400">Failed to load admin dashboard data.</p>
                     </Card>
-                </div>
+                )}
             </div>
         </div>
     );

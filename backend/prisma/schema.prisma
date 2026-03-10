@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -34,6 +34,15 @@ model User {
   // Add refresh tokens for JWT
   refreshTokens RefreshToken[]
   
+  // Lawyer profile (only for LAWYER role)
+  lawyerProfile LawyerProfile?
+  
+  // Reviews written by this user (as CLIENT)
+  clientReviews Review[] @relation("ClientReviews")
+  
+  // Bookings made by this user (as CLIENT)
+  clientBookings Booking[] @relation("ClientBookings")
+  
   @@map("users")
 }
 
@@ -47,3 +56,86 @@ model RefreshToken {
   
   @@map("refresh_tokens")
 }
+
+model LawyerProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  specialization String
+  barNumber      String?
+  hourlyRate     Float    @default(0)
+  experience     String?  // e.g. "15 years"
+  education      String?
+  bio            String?
+  languages      String[] @default(["English"])
+  availability   Json?    // Flexible JSON for schedule
+  location       String?
+  
+  verified       Boolean  @default(false)
+  rating         Float    @default(0)
+  reviewCount    Int      @default(0)
+  
+  reviews        Review[]
+  bookings       Booking[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@map("lawyer_profiles")
+}
+
+model Review {
+  id              String   @id @default(uuid())
+  rating          Int      // 1-5
+  comment         String?
+  
+  clientId        String
+  client          User     @relation("ClientReviews", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  lawyerProfileId String
+  lawyerProfile   LawyerProfile @relation(fields: [lawyerProfileId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([clientId, lawyerProfileId]) // One review per client per lawyer
+  @@map("reviews")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum ConsultationType {
+  VIDEO
+  PHONE
+  IN_PERSON
+}
+
+model Booking {
+  id              String           @id @default(uuid())
+  
+  clientId        String
+  client          User             @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  lawyerProfileId String
+  lawyerProfile   LawyerProfile    @relation(fields: [lawyerProfileId], references: [id], onDelete: Cascade)
+  
+  date            DateTime         // The date of the booking
+  startTime       String           // e.g. "09:00"
+  endTime         String           // e.g. "10:00"
+  
+  status          BookingStatus    @default(PENDING)
+  type            ConsultationType @default(VIDEO)
+  notes           String?          // Client's message/notes
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  @@map("bookings")
+}
+
